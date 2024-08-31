@@ -1,25 +1,29 @@
 //
-// Created by leo on 24-8-9.
+// Created by leo on 24-8-31.
 //
-#include "header/ff_demux.h"
-#include "header/ff_util.h"
-extern "C" {
+#include "../header/media_info.h"
+#include "../header/ff_util.h"
+#ifdef __cplusplus
+  extern "C" {
+    #include <libavutil/avutil.h>
+    #include <libavcodec/avcodec.h>
+  }
+#else
   #include <libavutil/avutil.h>
   #include <libavcodec/avcodec.h>
-}
-
+#endif
 #include <filesystem>
 #include <memory>
 namespace fs = std::filesystem;
 
-void test_ff_demux() {
-  const char* vPath="/home/leo/CLionProjects/untitled1/resources/mp4/the1.mp4";
+
+void MediaInfo::printVideoDemuxInfo(const std::string_view& vPath) {
   if(!fs::exists(vPath)){
-    fprintf(stderr,"pcm file not found: %s\n", vPath);
+    fprintf(stderr,"pcm file not found: %s\n", vPath.data());
     return;
   }
   AVFormatContext* fmtCtx = nullptr;
-  int ret = avformat_open_input(&fmtCtx, vPath, nullptr, nullptr);
+  int ret = avformat_open_input(&fmtCtx, vPath.data(), nullptr, nullptr);
   if(ret != 0){
     std::unique_ptr<char[]> errBuf = std::make_unique<char[]>(AV_ERROR_MAX_STRING_SIZE+1);
     av_strerror(ret,errBuf.get(),AV_ERROR_MAX_STRING_SIZE);
@@ -34,8 +38,8 @@ void test_ff_demux() {
     fprintf(stderr,"avformat_find_stream_info failed: %s\n", errBuf.get());
     return;
   }
-  printf("==== av_dump_format for file:%s =====\n", vPath);
-  av_dump_format(fmtCtxPtr.get(),0,vPath,0);
+  printf("==== av_dump_format for file:%s =====\n", vPath.data());
+  av_dump_format(fmtCtxPtr.get(),0,vPath.data(),0);
   printf("==== av_dump_format end =====\n");
   printf("media url: %s\n", fmtCtxPtr->url);
   printf("stream number: %d\n", fmtCtxPtr->nb_streams);

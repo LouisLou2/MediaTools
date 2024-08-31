@@ -14,12 +14,18 @@ include_directories(
 add_executable(
     ff_test
     main.cpp
-    ff_demux.cpp
-    extract_aac.cpp
     ff_util.cpp
-    h264_annexb.cpp
-    audio_pcm.cpp
-    video_yuv.cpp
+    header/media_info.h
+    header/yuv_converter.h
+    media_converter_impl/yuv_converter.cpp
+    header/media_utils.h
+    media_converter_impl/pcm_converter.cpp
+    header/pcm_converter.h
+    media_info_impl/media_info.cpp
+    extractor_impl/aac_extractor.cpp
+    header/aac_extractor.h
+    header/media_format_conv.h
+    media_format_conv_impl/media_format_conv.cpp
 )
 
 add_compile_definitions(__STDC_CONSTANT_MACROS)

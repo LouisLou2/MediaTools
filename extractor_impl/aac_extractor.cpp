@@ -1,33 +1,32 @@
 //
-// Created by leo on 24-8-10.
+// Created by leo on 24-9-1.
 //
-#include "header/extract_aac.h"
-#include "header/ff_util.h"
+#include "../header/aac_extractor.h"
 
+#include "../header/ff_util.h"
+
+#ifdef __cplusplus
 extern "C" {
 #include <libavutil/avutil.h>
 #include <libavcodec/avcodec.h>
 }
+#else
+#include <libavutil/avutil.h>
+#include <libavcodec/avcodec.h>
+#endif
 
 #include <filesystem>
 #include <memory>
 #include <fstream>
 #include <array>
 
-#define SAMPLING_ARRAY_LEN 13
-#define PROTECTION_ABSENT 1
-
 namespace fs = std::filesystem;
 
-const std::array<uint32_t,SAMPLING_ARRAY_LEN> samplingRateTable = {
-    96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350
+const std::array<uint32_t,SAMPLING_ARRAY_LEN> AACExtractor::samplingRateTable  = {
+  96000, 88200, 64000, 48000, 44100, 32000, 24000, 22050, 16000, 12000, 11025, 8000, 7350
 };
 
-int adtsHeaderSet( char* const pAdtsHeader,//可以改变指向空间的内容，不允许改变指向空间的地址
-                const int len,
-                const int profile,
-                const int sampleRate,
-                const int channels) {
+int AACExtractor::adtsHeaderSet(char*const pAdtsHeader, const int len, const int profile, const int sampleRate, const int channels) {
   uint16_t samplingRateInd;
   uint32_t adtslen = len+7;
   uint16_t i;
@@ -70,7 +69,7 @@ int adtsHeaderSet( char* const pAdtsHeader,//可以改变指向空间的内容�
   return 0;
 }
 
-void extract_aac(const char* vPath, const char* aacPath) {
+void AACExtractor::extractAAC(const std::string_view& vPath, const std::string_view& aacPath) {
   int ret=0;
   char errors[AV_ERROR_MAX_STRING_SIZE+1];
   if(!fs::exists(vPath)){
@@ -78,7 +77,7 @@ void extract_aac(const char* vPath, const char* aacPath) {
     return;
   }
   AVFormatContext* fmtCtx = nullptr;
-  ret = avformat_open_input(&fmtCtx, vPath, nullptr, nullptr);
+  ret = avformat_open_input(&fmtCtx, vPath.data(), nullptr, nullptr);
   if(ret != 0){
     av_strerror(ret,errors,AV_ERROR_MAX_STRING_SIZE);
     printAVError(errors,AV_ERROR_MAX_STRING_SIZE,ret,"avformat_open_input failed");
@@ -93,7 +92,7 @@ void extract_aac(const char* vPath, const char* aacPath) {
   }
 
   printf("==== av_dump_format for file:%s =====\n", vPath);
-  av_dump_format(fmtCtxPtr.get(),0,vPath,0);
+  av_dump_format(fmtCtxPtr.get(),0,vPath.data(),0);
   printf("==== av_dump_format end =====\n");
 
   std::unique_ptr<AVPacket,AVPacketDeleter> pkt(av_packet_alloc());
@@ -112,7 +111,7 @@ void extract_aac(const char* vPath, const char* aacPath) {
   }
 
   char adtsHeader[7];
-  std::ofstream ofs(aacPath,std::ios::binary);
+  std::ofstream ofs(aacPath.data(),std::ios::binary);
   if(!ofs.is_open()){
     fprintf(stderr,"open file failed: %s\n", aacPath);
     return;

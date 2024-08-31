@@ -1,13 +1,18 @@
 //
-// Created by leo on 24-8-11.
+// Created by leo on 24-9-1.
 //
-#include "header/h264_annexb.h"
-#include "header/ff_util.h"
+#include "../header/media_format_conv.h"
+#include "../header/ff_util.h"
 
+#ifdef __cplusplus
 extern "C" {
-  #include <libavfilter/avfilter.h>
-  #include <libavcodec/avcodec.h>
+#include <libavfilter/avfilter.h>
+#include <libavcodec/avcodec.h>
 }
+#else
+#include <libavfilter/avfilter.h>
+#include <libavcodec/avcodec.h>
+#endif
 
 #include <filesystem>
 #include <memory>
@@ -16,15 +21,15 @@ extern "C" {
 
 namespace fs = std::filesystem;
 
-void test_h264_mp4_annexb(const char* srcPath, const char* dstPath) {
+void MediaFormatConv::h264_mp4_annexb(const std::string_view& srcPath, const std::string_view& dstPath) {
   int ret=0;
   std::array<char,AV_ERROR_MAX_STRING_SIZE+1> errBuf{};
   if(!fs::exists(srcPath)){
-    fprintf(stderr,"source file not found: %s\n", srcPath);
+    fprintf(stderr,"source file not found: %s\n", srcPath.data());
     return;
   }
   AVFormatContext* fmtCtx = nullptr;
-  ret = avformat_open_input(&fmtCtx, srcPath, nullptr, nullptr);
+  ret = avformat_open_input(&fmtCtx, srcPath.data(), nullptr, nullptr);
   if(ret != 0){
     printAVError(errBuf.data(),AV_ERROR_MAX_STRING_SIZE,ret,"avformat_open_input failed");
     return;
@@ -36,8 +41,8 @@ void test_h264_mp4_annexb(const char* srcPath, const char* dstPath) {
     return;
   }
 
-  printf("==== av_dump_format for file:%s =====\n", srcPath);
-  av_dump_format(fmtCtxPtr.get(),0,srcPath,0);
+  printf("==== av_dump_format for file:%s =====\n", srcPath.data());
+  av_dump_format(fmtCtxPtr.get(),0,srcPath.data(),0);
   printf("==== av_dump_format end =====\n");
 
   int vInd = av_find_best_stream(fmtCtxPtr.get(), AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
@@ -60,9 +65,9 @@ void test_h264_mp4_annexb(const char* srcPath, const char* dstPath) {
 
   std::unique_ptr<AVPacket,AVPacketDeleter> pkt(av_packet_alloc());
 
-  std::ofstream ofs(dstPath,std::ios::binary);
+  std::ofstream ofs(dstPath.data(),std::ios::binary);
   if(!ofs.is_open()){
-    fprintf(stderr,"open file failed: %s\n", dstPath);
+    fprintf(stderr,"open file failed: %s\n", dstPath.data());
     return;
   }
 

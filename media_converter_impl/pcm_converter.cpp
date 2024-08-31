@@ -1,6 +1,7 @@
 //
-// Created by leo on 24-8-16.
+// Created by leo on 24-8-31.
 //
+
 #include <array>
 #include <memory>
 #include <filesystem>
@@ -8,13 +9,15 @@
 
 #ifdef __cplusplus
 extern "C" {
-  #include <libavutil/avutil.h>
+#include <libavutil/avutil.h>
 }
+#else
+#include <libavutil/avutil.h>
 #endif
 
-#include "header/audio_pcm.h"
-#include "header/ff_util.h"
-#include "header/media_type.h"
+#include "../header/ff_util.h"
+#include "../header/media_type.h"
+#include "../header/pcm_converter.h"
 
 #define AUDIO_INBUF_SIZE 20480
 #define AUDIO_REFILL_THRESH 4096
@@ -22,10 +25,10 @@ extern "C" {
 #define INVALID_DATA_ERR2 (-1163346256)
 
 namespace fs = std::filesystem;
-static bool formatPrinted = false;
-static uint64_t pktCount = 0;
 
-void audioToPcm(AudioType type, const std::string_view& aacPath, const std::string_view& pcmPath) {
+PcmConverter::PcmConverter(): formatPrinted(false), pktCount(0) {}
+
+void PcmConverter::audioToPcm(AudioType type, const std::string_view& aacPath, const std::string_view& pcmPath) {
   // ensure file is exist and can be read
   if(!fs::exists(aacPath)){
     printAVError(nullptr,-1,0,"source file not found");
@@ -109,7 +112,8 @@ void audioToPcm(AudioType type, const std::string_view& aacPath, const std::stri
   printf("audio to pcm done\n");
 }
 
-void decodeAudio(AVCodecContext* codecCtx, AVPacket* pkt, AVFrame* decodedFrame, std::ofstream& ofs) {
+
+void PcmConverter::decodeAudio(AVCodecContext* codecCtx, AVPacket* pkt, AVFrame* decodedFrame, std::ofstream& ofs) {
   int ret;
   int dataSize;
   ret = avcodec_send_packet(codecCtx,pkt);
@@ -162,7 +166,7 @@ sample format enum: 8
 sample format: fltp
  */
 // ffplay -f f32le -ar 44100 -ac 2 -i the1.pcm
-void printSampleFormat(const AVFrame* frame) {
+void PcmConverter::printSampleFormat(const AVFrame* frame) {
   printf("sample rate: %d\n",frame->sample_rate);
   printf("channel layout: %d\n",frame->ch_layout.nb_channels);
   printf("sample format enum: %d\n",frame->format);
