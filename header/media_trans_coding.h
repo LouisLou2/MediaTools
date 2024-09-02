@@ -13,6 +13,7 @@ class MediaTransCoder {
 public:
   static void test();
   static Eigen::MatrixXd plainDCT(const Eigen::MatrixXi& x);
+  static Eigen::MatrixXd plainDCT1_same(const Eigen::MatrixXi& x);
   static Eigen::MatrixXi imgDCT(const rawPicM& x);
 };
 #endif //MEDIA_TRANS_CODING_H

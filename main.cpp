@@ -10,7 +10,7 @@ void testVidToYuv() {
 }
 
 void testDCT() {
-    Eigen::MatrixXi x(8,8);
+    rawPicM x(8,8);
     x <<  89, 101, 114, 125, 126, 115, 105, 96,
 
           97, 115, 131, 147, 149, 135, 123, 113,
@@ -26,7 +26,7 @@ void testDCT() {
           97, 119, 149, 171, 172, 145, 117, 96,
 
           88, 107, 136, 156, 155, 129, 97, 75;
-    auto y=MediaTransCoder::plainDCT(x);
+    auto y=MediaTransCoder::imgDCT(x);
     std::cout << "y = " << std::endl << y << std::endl;
 }
 
