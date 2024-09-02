@@ -26,11 +26,15 @@ add_executable(
     header/aac_extractor.h
     header/media_format_conv.h
     media_format_conv_impl/media_format_conv.cpp
+    header/media_trans_coding.h
+    media_trans_coding_impl/media_trans_coding.cpp
+    # simple_dct.cpp
 )
 
 add_compile_definitions(__STDC_CONSTANT_MACROS)
 
 find_package(PkgConfig REQUIRED)
+find_package (Eigen3 3.3 REQUIRED NO_MODULE)
 
 pkg_check_modules(AVCODEC REQUIRED IMPORTED_TARGET libavcodec)
 pkg_check_modules(AVFORMAT REQUIRED IMPORTED_TARGET libavformat)
@@ -42,4 +46,5 @@ target_link_libraries(ff_test
     PkgConfig::AVFORMAT
     PkgConfig::AVUTIL
     PkgConfig::AVFILTER
+    Eigen3::Eigen
 )
